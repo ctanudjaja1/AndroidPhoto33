@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.*;
 
 import androidx.appcompat.app.AlertDialog;
@@ -38,7 +37,6 @@ public class PhotoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo);
 
-        // Get data passed from AlbumActivity
         String albumName = getIntent().getStringExtra("albumName");
         currentIndex = getIntent().getIntExtra("photoIndex", 0);
 
@@ -51,41 +49,29 @@ public class PhotoActivity extends AppCompatActivity {
             return;
         }
 
+        // Use the list directly from allAlbums so mutations are reflected on save
         photos = currentAlbum.getPhotos();
 
-        // Wire views
         photoDisplay  = findViewById(R.id.photoDisplay);
         photoFilename = findViewById(R.id.photoFilename);
         photoTags     = findViewById(R.id.photoTags);
         photoIndex    = findViewById(R.id.photoIndex);
 
-        // Slideshow buttons
         findViewById(R.id.btnPrevPhoto).setOnClickListener(v -> {
-            if (currentIndex > 0) {
-                currentIndex--;
-                displayCurrentPhoto();
-            } else {
-                Toast.makeText(this, "Already at first photo", Toast.LENGTH_SHORT).show();
-            }
+            if (currentIndex > 0) { currentIndex--; displayCurrentPhoto(); }
+            else Toast.makeText(this, "Already at first photo", Toast.LENGTH_SHORT).show();
         });
 
         findViewById(R.id.btnNextPhoto).setOnClickListener(v -> {
-            if (currentIndex < photos.size() - 1) {
-                currentIndex++;
-                displayCurrentPhoto();
-            } else {
-                Toast.makeText(this, "Already at last photo", Toast.LENGTH_SHORT).show();
-            }
+            if (currentIndex < photos.size() - 1) { currentIndex++; displayCurrentPhoto(); }
+            else Toast.makeText(this, "Already at last photo", Toast.LENGTH_SHORT).show();
         });
 
-        // Tag buttons
         findViewById(R.id.btnAddTag).setOnClickListener(v -> handleAddTag());
         findViewById(R.id.btnDeleteTag).setOnClickListener(v -> handleDeleteTag());
 
         displayCurrentPhoto();
     }
-
-    // ── Display ───────────────────────────────────────────────────────
 
     private void displayCurrentPhoto() {
         if (photos.isEmpty()) {
@@ -96,58 +82,45 @@ public class PhotoActivity extends AppCompatActivity {
 
         Photo photo = photos.get(currentIndex);
 
-        // Load image from URI
         try {
             Uri uri = Uri.parse(photo.getFilePath());
             InputStream stream = getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(stream);
-            if (bitmap != null) {
-                photoDisplay.setImageBitmap(bitmap);
-            } else {
-                photoDisplay.setImageResource(android.R.drawable.ic_menu_gallery);
-            }
+            photoDisplay.setImageBitmap(bitmap != null ? bitmap :
+                    android.graphics.BitmapFactory.decodeResource(getResources(),
+                            android.R.drawable.ic_menu_gallery));
         } catch (Exception e) {
             photoDisplay.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
-        // Show filename (last segment of URI)
         String path = photo.getFilePath();
-        String filename = path.contains("/") ? path.substring(path.lastIndexOf("/") + 1) : path;
-        photoFilename.setText(filename);
-
-        // Show index counter
+        photoFilename.setText(path.contains("/") ? path.substring(path.lastIndexOf("/") + 1) : path);
         photoIndex.setText((currentIndex + 1) + " / " + photos.size());
-
-        // Show tags
         refreshTagsDisplay(photo);
     }
 
     private void refreshTagsDisplay(Photo photo) {
-        if (photo.getTags().isEmpty()) {
+        List<Tag> tags = photo.getTags();
+        if (tags.isEmpty()) {
             photoTags.setText("No tags");
         } else {
-            StringBuilder sb = new StringBuilder("Tags: ");
-            for (Tag tag : photo.getTags()) {
-                sb.append(tag.toString()).append("  ");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < tags.size(); i++) {
+                if (i > 0) sb.append("\n");
+                sb.append(tags.get(i).toString());
             }
-            photoTags.setText(sb.toString().trim());
+            photoTags.setText(sb.toString());
         }
     }
 
-    // ── Tag Operations ────────────────────────────────────────────────
-
     private void handleAddTag() {
         Photo photo = photos.get(currentIndex);
-
-        // Step 1: pick tag type (only person or location)
         String[] tagTypes = {"person", "location"};
 
         new AlertDialog.Builder(this)
                 .setTitle("Select Tag Type")
                 .setItems(tagTypes, (typeDialog, typeIndex) -> {
                     String selectedType = tagTypes[typeIndex];
-
-                    // Step 2: enter tag value
                     EditText input = new EditText(this);
                     input.setHint("Enter " + selectedType);
 
@@ -162,13 +135,13 @@ public class PhotoActivity extends AppCompatActivity {
                                     return;
                                 }
                                 Tag newTag = new Tag(selectedType, value);
-                                boolean added = photo.addTag(newTag);
-                                if (!added) {
+                                if (!photo.addTag(newTag)) {
                                     Toast.makeText(this, "Tag already exists",
                                             Toast.LENGTH_SHORT).show();
                                 } else {
                                     refreshTagsDisplay(photo);
                                     saveAlbums();
+                                    Toast.makeText(this, "Tag added", Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Cancel", null)
@@ -180,22 +153,29 @@ public class PhotoActivity extends AppCompatActivity {
 
     private void handleDeleteTag() {
         Photo photo = photos.get(currentIndex);
+        // Snapshot the tags list at dialog-open time into a separate list
+        // so the index stays stable even if anything changes
+        List<Tag> tagSnapshot = new ArrayList<>(photo.getTags());
 
-        if (photo.getTags().isEmpty()) {
+        if (tagSnapshot.isEmpty()) {
             Toast.makeText(this, "No tags to delete", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Build list of tag strings to show in dialog
-        String[] tagStrings = photo.getTags().stream()
-                .map(Tag::toString)
-                .toArray(String[]::new);
+        String[] tagStrings = new String[tagSnapshot.size()];
+        for (int i = 0; i < tagSnapshot.size(); i++) {
+            tagStrings[i] = tagSnapshot.get(i).toString();
+        }
 
         new AlertDialog.Builder(this)
-                .setTitle("Delete Tag")
+                .setTitle("Select Tag to Delete")
                 .setItems(tagStrings, (dialog, which) -> {
-                    Tag tagToRemove = photo.getTags().get(which);
-                    photo.removeTag(tagToRemove);
+                    Tag tagToRemove = tagSnapshot.get(which); // use snapshot index
+                    // Remove by matching type+value directly, bypassing equals() ambiguity
+                    photo.getTags().removeIf(t ->
+                            t.getTagType().equalsIgnoreCase(tagToRemove.getTagType()) &&
+                                    t.getValue().equalsIgnoreCase(tagToRemove.getValue())
+                    );
                     refreshTagsDisplay(photo);
                     saveAlbums();
                     Toast.makeText(this, "Tag deleted", Toast.LENGTH_SHORT).show();
@@ -204,16 +184,12 @@ public class PhotoActivity extends AppCompatActivity {
                 .show();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────
-
     private Album findAlbum(String name) {
         for (Album a : allAlbums) {
             if (a.getAlbumName().equals(name)) return a;
         }
         return null;
     }
-
-    // ── Persistence ───────────────────────────────────────────────────
 
     private void saveAlbums() {
         try (ObjectOutputStream oos = new ObjectOutputStream(

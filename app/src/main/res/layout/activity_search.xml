@@ -35,6 +35,7 @@
             android:textStyle="bold"/>
     </LinearLayout>
 
+    <!-- Everything scrolls together -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -183,16 +184,17 @@
                 android:textSize="13sp"
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"/>
+
+            <!-- Results grid — fixed height so it doesn't fight the ScrollView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/searchResultsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:padding="4dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"/>
+
         </LinearLayout>
     </ScrollView>
-
-    <!-- Results grid -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/searchResultsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false"/>
 
 </LinearLayout>

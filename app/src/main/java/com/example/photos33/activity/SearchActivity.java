@@ -25,7 +25,6 @@ public class SearchActivity extends AppCompatActivity {
     private RadioGroup radioGroup;
     private TextView resultCount;
     private PhotoAdapter resultAdapter;
-
     private List<Album> allAlbums;
 
     @Override
@@ -35,15 +34,13 @@ public class SearchActivity extends AppCompatActivity {
 
         allAlbums = loadAlbums();
 
-        // Wire views
-        autoValue1    = findViewById(R.id.autoCompleteValue1);
-        autoValue2    = findViewById(R.id.autoCompleteValue2);
-        spinnerType1  = findViewById(R.id.spinnerTagType1);
-        spinnerType2  = findViewById(R.id.spinnerTagType2);
-        radioGroup    = findViewById(R.id.radioGroupOperator);
-        resultCount   = findViewById(R.id.searchResultCount);
+        autoValue1   = findViewById(R.id.autoCompleteValue1);
+        autoValue2   = findViewById(R.id.autoCompleteValue2);
+        spinnerType1 = findViewById(R.id.spinnerTagType1);
+        spinnerType2 = findViewById(R.id.spinnerTagType2);
+        radioGroup   = findViewById(R.id.radioGroupOperator);
+        resultCount  = findViewById(R.id.searchResultCount);
 
-        // Populate spinners with only person and location
         String[] tagTypes = {"person", "location"};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, tagTypes);
@@ -51,60 +48,64 @@ public class SearchActivity extends AppCompatActivity {
         spinnerType1.setAdapter(spinnerAdapter);
         spinnerType2.setAdapter(spinnerAdapter);
 
-        // Set up autocomplete for value fields
-        setupAutoComplete(autoValue1, spinnerType1);
-        setupAutoComplete(autoValue2, spinnerType2);
+        // Set initial autocomplete suggestions
+        bindAutoComplete(autoValue1, "person");
+        bindAutoComplete(autoValue2, "person");
 
-        // Results RecyclerView
+        // Rebuild suggestions when tag type changes — don't touch the text
+        spinnerType1.setOnItemSelectedListener(spinnerListener(autoValue1, tagTypes));
+        spinnerType2.setOnItemSelectedListener(spinnerListener(autoValue2, tagTypes));
+
         RecyclerView recyclerView = findViewById(R.id.searchResultsRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         resultAdapter = new PhotoAdapter(
                 new ArrayList<>(),
-                (photo, position) -> {},   // OnPhotoClickListener
-                (photo, position) -> {}    // OnPhotoLongClickListener
+                (photo, position) -> {},
+                (photo, position) -> {}
         );
         recyclerView.setAdapter(resultAdapter);
 
-        // Search button
         findViewById(R.id.btnSearch).setOnClickListener(v -> handleSearch());
     }
 
-    private void setupAutoComplete(AutoCompleteTextView field, Spinner spinner) {
-        // Update autocomplete suggestions whenever the user types
-        field.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int i, int i1, int i2) {}
-            @Override public void onTextChanged(CharSequence s, int i, int i1, int i2) {
-                String tagType = spinner.getSelectedItem().toString();
-                String prefix = s.toString().toLowerCase();
-                List<String> suggestions = getAutoCompleteSuggestions(tagType, prefix);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        SearchActivity.this,
-                        android.R.layout.simple_dropdown_item_1line,
-                        suggestions);
-                field.setAdapter(adapter);
-                field.showDropDown();
-            }
-            @Override public void afterTextChanged(android.text.Editable e) {}
-        });
+    /**
+     * Binds a static suggestion list to the AutoCompleteTextView.
+     * AutoCompleteTextView handles prefix filtering automatically —
+     * we just need to set the full list once per tag type.
+     */
+    private void bindAutoComplete(AutoCompleteTextView field, String tagType) {
+        List<String> values = getAllValuesForType(tagType);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, values);
+        field.setAdapter(adapter);
+        field.setThreshold(1); // show after 1 character typed
     }
 
-    private List<String> getAutoCompleteSuggestions(String tagType, String prefix) {
-        Set<String> seen = new HashSet<>();
-        List<String> suggestions = new ArrayList<>();
+    private AdapterView.OnItemSelectedListener spinnerListener(
+            AutoCompleteTextView field, String[] tagTypes) {
+        return new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, android.view.View view,
+                                       int position, long id) {
+                bindAutoComplete(field, tagTypes[position]);
+                field.setText(""); // clear stale value when type changes
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        };
+    }
 
+    private List<String> getAllValuesForType(String tagType) {
+        LinkedHashSet<String> seen = new LinkedHashSet<>();
         for (Album album : allAlbums) {
             for (Photo photo : album.getPhotos()) {
                 for (Tag tag : photo.getTags()) {
                     if (tag.getTagType().equalsIgnoreCase(tagType)) {
-                        String val = tag.getValue().toLowerCase();
-                        if (val.startsWith(prefix) && seen.add(val)) {
-                            suggestions.add(tag.getValue());
-                        }
+                        seen.add(tag.getValue());
                     }
                 }
             }
         }
-        return suggestions;
+        return new ArrayList<>(seen);
     }
 
     private void handleSearch() {
@@ -118,25 +119,21 @@ public class SearchActivity extends AppCompatActivity {
             return;
         }
 
-        boolean useAnd = ((RadioButton) findViewById(R.id.radioAnd)).isChecked();
+        boolean useAnd      = ((RadioButton) findViewById(R.id.radioAnd)).isChecked();
         boolean useTwoTerms = !value2.isEmpty();
 
         List<Photo> results = new ArrayList<>();
-        Set<String> seen = new HashSet<>(); // avoid duplicate results
+        Set<String> seen    = new HashSet<>();
 
         for (Album album : allAlbums) {
             for (Photo photo : album.getPhotos()) {
                 boolean matches;
-
                 if (!useTwoTerms) {
-                    // Single term: match prefix
                     matches = photoMatchesPrefix(photo, type1, value1);
                 } else if (useAnd) {
-                    // AND: photo must match both terms
                     matches = photoMatchesPrefix(photo, type1, value1)
                             && photoMatchesPrefix(photo, type2, value2);
                 } else {
-                    // OR: photo must match either term
                     matches = photoMatchesPrefix(photo, type1, value1)
                             || photoMatchesPrefix(photo, type2, value2);
                 }
