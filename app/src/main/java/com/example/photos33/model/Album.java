@@ -59,4 +59,6 @@ public class Album implements Serializable {
      *@return the integer count of photos
      */
     public int getPhotoCount() { return photos.size(); }
+    // Add to Album.java
+    public void setName(String name) { this.name = name; }
 }
