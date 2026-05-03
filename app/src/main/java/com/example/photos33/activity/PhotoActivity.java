@@ -37,6 +37,8 @@ public class PhotoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo);
 
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         String albumName = getIntent().getStringExtra("albumName");
         currentIndex = getIntent().getIntExtra("photoIndex", 0);
 

@@ -11,28 +11,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="24dp"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
         android:paddingEnd="24dp"
         android:paddingTop="48dp"
         android:paddingBottom="20dp"
-        android:background="@color/primaryMid">
+        android:background="@color/primaryMid"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SEARCH"
-            android:textColor="@color/accent"
-            android:textSize="12sp"
-            android:letterSpacing="0.3"/>
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            android:contentDescription="@string/back_button"
+            app:tint="@color/white"/>
 
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Find Photos"
-            android:textColor="@color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"/>
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_label"
+                android:textColor="@color/accent"
+                android:textSize="12sp"
+                android:letterSpacing="0.3"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/search_title"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Everything scrolls together -->
@@ -64,7 +83,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="FIRST TAG"
+                        android:text="@string/first_tag_label"
                         android:textColor="@color/accent"
                         android:textSize="11sp"
                         android:letterSpacing="0.2"
@@ -75,7 +94,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="44dp"
                         android:background="@drawable/spinner_bg"
-                        android:paddingStart="12dp"/>
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"/>
 
                     <AutoCompleteTextView
                         android:id="@+id/autoCompleteValue1"
@@ -83,10 +103,11 @@
                         android:layout_height="52dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/input_bg"
-                        android:hint="Enter value..."
+                        android:hint="@string/enter_value_hint"
                         android:textColorHint="@color/textSecondary"
                         android:textColor="@color/white"
                         android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
                         android:singleLine="true"
                         android:inputType="text"/>
                 </LinearLayout>
@@ -105,7 +126,7 @@
                     android:id="@+id/radioAnd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AND"
+                    android:text="@string/operator_and"
                     android:textColor="@color/white"
                     android:layout_marginEnd="24dp"
                     android:buttonTint="@color/accent"/>
@@ -114,7 +135,7 @@
                     android:id="@+id/radioOr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="OR"
+                    android:text="@string/operator_or"
                     android:textColor="@color/white"
                     android:buttonTint="@color/accent"/>
             </RadioGroup>
@@ -136,7 +157,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="SECOND TAG (OPTIONAL)"
+                        android:text="@string/second_tag_label"
                         android:textColor="@color/accent"
                         android:textSize="11sp"
                         android:letterSpacing="0.2"
@@ -147,7 +168,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="44dp"
                         android:background="@drawable/spinner_bg"
-                        android:paddingStart="12dp"/>
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"/>
 
                     <AutoCompleteTextView
                         android:id="@+id/autoCompleteValue2"
@@ -155,10 +177,11 @@
                         android:layout_height="52dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/input_bg"
-                        android:hint="Enter value..."
+                        android:hint="@string/enter_value_hint"
                         android:textColorHint="@color/textSecondary"
                         android:textColor="@color/white"
                         android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
                         android:singleLine="true"
                         android:inputType="text"/>
                 </LinearLayout>
@@ -170,7 +193,7 @@
                 style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:text="SEARCH"
+                android:text="@string/btn_search"
                 android:textSize="16sp"
                 android:letterSpacing="0.1"
                 app:backgroundTint="@color/accent"/>
@@ -185,7 +208,7 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"/>
 
-            <!-- Results grid — fixed height so it doesn't fight the ScrollView -->
+            <!-- Results grid -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/searchResultsRecyclerView"
                 android:layout_width="match_parent"

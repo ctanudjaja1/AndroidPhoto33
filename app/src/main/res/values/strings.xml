@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Photos33</string>
+    <string name="album_label">ALBUM</string>
+    <string name="btn_add">Add</string>
+    <string name="btn_remove">Remove</string>
+    <string name="btn_move">Move</string>
+    <string name="back_button">Back</string>
+    <string name="photo_label">PHOTO</string>
+    <string name="photo_viewing">Viewing</string>
+    <string name="photo_display_desc">Photo display</string>
+    <string name="tags_label">TAGS</string>
+    <string name="no_tags_hint">No tags yet</string>
+    <string name="btn_add_tag">Add Tag</string>
+    <string name="btn_delete_tag">Delete Tag</string>
+    <string name="btn_prev">◀ Prev</string>
+    <string name="btn_next">Next ▶</string>
+    <string name="search_label">SEARCH</string>
+    <string name="search_title">Find Photos</string>
+    <string name="first_tag_label">FIRST TAG</string>
+    <string name="second_tag_label">SECOND TAG (OPTIONAL)</string>
+    <string name="enter_value_hint">Enter value…</string>
+    <string name="operator_and">AND</string>
+    <string name="operator_or">OR</string>
+    <string name="btn_search">SEARCH</string>
 </resources>

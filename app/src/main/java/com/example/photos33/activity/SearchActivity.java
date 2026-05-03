@@ -32,6 +32,8 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         allAlbums = loadAlbums();
 
         autoValue1   = findViewById(R.id.autoCompleteValue1);

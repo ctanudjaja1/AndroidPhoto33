@@ -58,6 +58,8 @@ public class AlbumActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
 
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         String albumName = getIntent().getStringExtra("albumName");
 
         allAlbums = loadAlbums();
