@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     selectedAlbum.setName(newName);
                     selectedAlbum = null;
+                    albumAdapter.clearSelection();
                     albumAdapter.updateAlbums(albumList);
                     saveAlbums();
                 })
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Delete", (dialog, which) -> {
                     albumList.remove(selectedAlbum);
                     selectedAlbum = null;
+                    albumAdapter.clearSelection();
                     albumAdapter.updateAlbums(albumList);
                     saveAlbums();
                 })

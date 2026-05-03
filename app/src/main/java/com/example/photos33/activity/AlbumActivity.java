@@ -123,6 +123,7 @@ public class AlbumActivity extends AppCompatActivity {
                 .setPositiveButton("Remove", (dialog, which) -> {
                     currentAlbum.getPhotos().remove(selectedPhoto);
                     selectedPhoto = null;
+                    photoAdapter.clearSelection();
                     photoAdapter.updatePhotos(currentAlbum.getPhotos());
                     saveAlbums();
                 })
@@ -159,6 +160,7 @@ public class AlbumActivity extends AppCompatActivity {
                     destination.addPhoto(selectedPhoto);
                     currentAlbum.getPhotos().remove(selectedPhoto);
                     selectedPhoto = null;
+                    photoAdapter.clearSelection();
                     photoAdapter.updatePhotos(currentAlbum.getPhotos());
                     saveAlbums();
                     Toast.makeText(this, "Photo moved", Toast.LENGTH_SHORT).show();
